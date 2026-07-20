@@ -70,6 +70,10 @@ enum Command {
         /// Path to the invitation file
         invite: PathBuf,
 
+        /// The local WireGuard listen port
+        #[clap(long)]
+        listen_port: Option<u16>,
+
         #[clap(flatten)]
         hosts: HostsOpts,
 
@@ -274,8 +278,12 @@ fn install(
     install_opts: &InstallOpts,
     nat_opts: &NatOpts,
     invite: &Path,
+    listen_port: Option<u16>,
 ) -> Result<(), Error> {
-    let config = InterfaceConfig::from_file(invite)?;
+    let mut config = InterfaceConfig::from_file(invite)?;
+    if let Some(listen_port) = listen_port {
+        config.interface.listen_port = Some(listen_port);
+    }
 
     let interface_name = if install_opts.default_name {
         config.interface.network_name.clone()
@@ -1144,10 +1152,11 @@ fn run(opts: &Opts) -> Result<(), Error> {
     match command {
         Command::Install {
             invite,
+            listen_port,
             hosts,
             install_opts,
             nat,
-        } => install(opts, &hosts, &install_opts, &nat, &invite)?,
+        } => install(opts, &hosts, &install_opts, &nat, &invite, listen_port)?,
         Command::Show {
             short,
             tree,
@@ -1249,4 +1258,29 @@ fn run(opts: &Opts) -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn install_accepts_listen_port() {
+        let opts = Opts::try_parse_from([
+            "innernet",
+            "install",
+            "invite.toml",
+            "--listen-port",
+            "51821",
+        ])
+        .unwrap();
+
+        assert!(matches!(
+            opts.command,
+            Some(Command::Install {
+                listen_port: Some(51821),
+                ..
+            })
+        ));
+    }
 }
