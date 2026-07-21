@@ -184,7 +184,7 @@ test_short_lived_invitation() {
 test_install_listen_port() {
     info "Confirming install applies the requested listen port."
     cmd docker exec "$PEER1_CONTAINER" bash -c \
-        'innernet $INNERNET_ARGS show "$INTERFACE" | grep -q "listening port.*51821"'
+        'innernet $INNERNET_ARGS show "$INTERFACE" | grep -Fq "listening port: 51821"'
 }
 
 test_simultaneous_redemption() {

@@ -1259,28 +1259,3 @@ fn run(opts: &Opts) -> Result<(), Error> {
 
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn install_accepts_listen_port() {
-        let opts = Opts::try_parse_from([
-            "innernet",
-            "install",
-            "invite.toml",
-            "--listen-port",
-            "51821",
-        ])
-        .unwrap();
-
-        assert!(matches!(
-            opts.command,
-            Some(Command::Install {
-                listen_port: Some(51821),
-                ..
-            })
-        ));
-    }
-}
